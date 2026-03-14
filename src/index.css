@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,52 +6,49 @@
 
 @layer base {
   :root {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 96%;
+    --background: 220 14% 98%;
+    --foreground: 222 47% 11%;
 
-    --card: 222 41% 10%;
-    --card-foreground: 210 40% 96%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 222 41% 10%;
-    --popover-foreground: 210 40% 96%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 43 96% 56%;
-    --primary-foreground: 222 47% 6%;
+    --primary: 243 75% 59%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 30% 16%;
-    --secondary-foreground: 210 40% 96%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 222 30% 14%;
-    --muted-foreground: 215 20% 55%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 43 96% 56%;
-    --accent-foreground: 222 47% 6%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 222 47% 11%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 222 30% 18%;
-    --input: 222 30% 18%;
-    --ring: 43 96% 56%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 243 75% 59%;
 
     --radius: 0.75rem;
 
-    --gold: 43 96% 56%;
-    --gold-dim: 43 60% 40%;
-    --navy: 222 47% 6%;
-    --navy-light: 222 41% 10%;
-    --navy-lighter: 222 30% 16%;
-    --success: 152 69% 50%;
-    --warning: 38 92% 50%;
+    --indigo: 243 75% 59%;
+    --emerald: 160 84% 39%;
+    --coral: 0 91% 71%;
+    --amber: 38 92% 50%;
 
-    --sidebar-background: 222 41% 8%;
-    --sidebar-foreground: 210 40% 96%;
-    --sidebar-primary: 43 96% 56%;
-    --sidebar-primary-foreground: 222 47% 6%;
-    --sidebar-accent: 222 30% 14%;
-    --sidebar-accent-foreground: 210 40% 96%;
-    --sidebar-border: 222 30% 18%;
-    --sidebar-ring: 43 96% 56%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 243 75% 59%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 243 75% 59%;
   }
 }
 
@@ -70,52 +67,52 @@
 }
 
 @layer utilities {
-  .glass-card {
-    @apply bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl;
+  .surface-card {
+    @apply bg-card border border-border rounded-xl shadow-sm;
   }
 
-  .gold-glow {
-    box-shadow: 0 0 20px hsl(43 96% 56% / 0.15), 0 0 60px hsl(43 96% 56% / 0.05);
+  .surface-card-hover {
+    @apply bg-card border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
   }
 
-  .gold-gradient {
-    background: linear-gradient(135deg, hsl(43 96% 56%), hsl(38 92% 50%), hsl(43 96% 56%));
+  .indigo-glow {
+    box-shadow: 0 0 0 3px hsl(243 75% 59% / 0.1);
   }
 
   .card-gradient-axis {
-    background: linear-gradient(135deg, hsl(280 60% 35%), hsl(320 60% 40%));
+    background: linear-gradient(135deg, hsl(230 70% 35%), hsl(250 70% 50%));
   }
 
   .card-gradient-hdfc {
-    background: linear-gradient(135deg, hsl(210 80% 25%), hsl(210 80% 40%));
+    background: linear-gradient(135deg, hsl(0 65% 40%), hsl(340 60% 50%));
   }
 
   .card-gradient-sbi {
-    background: linear-gradient(135deg, hsl(210 60% 30%), hsl(195 70% 35%));
+    background: linear-gradient(135deg, hsl(220 60% 25%), hsl(220 50% 40%));
   }
 
   .card-gradient-icici {
-    background: linear-gradient(135deg, hsl(15 80% 40%), hsl(30 80% 50%));
+    background: linear-gradient(135deg, hsl(25 80% 45%), hsl(38 80% 55%));
   }
 
   .card-gradient-amex {
-    background: linear-gradient(135deg, hsl(220 30% 25%), hsl(220 30% 40%));
+    background: linear-gradient(135deg, hsl(210 20% 30%), hsl(210 20% 45%));
   }
 
   .card-gradient-kotak {
-    background: linear-gradient(135deg, hsl(0 70% 35%), hsl(0 70% 50%));
+    background: linear-gradient(135deg, hsl(0 60% 40%), hsl(0 50% 55%));
   }
 
   .card-gradient-yes {
-    background: linear-gradient(135deg, hsl(210 80% 35%), hsl(195 80% 45%));
+    background: linear-gradient(135deg, hsl(210 70% 40%), hsl(200 70% 50%));
   }
 
   .card-gradient-default {
-    background: linear-gradient(135deg, hsl(222 30% 18%), hsl(222 30% 28%));
+    background: linear-gradient(135deg, hsl(215 25% 35%), hsl(215 20% 50%));
   }
 
   .shimmer {
-    background: linear-gradient(90deg, hsl(222 30% 14%) 0%, hsl(222 30% 20%) 50%, hsl(222 30% 14%) 100%);
+    background: linear-gradient(90deg, hsl(220 14% 96%) 0%, hsl(220 14% 92%) 50%, hsl(220 14% 96%) 100%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }

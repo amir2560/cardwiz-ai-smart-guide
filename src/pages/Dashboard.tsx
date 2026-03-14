@@ -1,13 +1,21 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { IndianRupee, CreditCard, TrendingDown, Activity, ArrowRight } from 'lucide-react';
+import { IndianRupee, CreditCard, TrendingDown, Trophy, ArrowRight } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import { loadCards, loadTransactions } from '@/lib/store';
+import { recommendCards, Category, CATEGORIES } from '@/lib/data';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { motion } from 'framer-motion';
 
 export default function Dashboard() {
   const [cards] = useState(loadCards);
   const [txns] = useState(loadTransactions);
+
+  // Quick recommend state
+  const [qCategory, setQCategory] = useState<Category>('Dining');
+  const [qAmount, setQAmount] = useState('');
+  const [qResult, setQResult] = useState<{ name: string; bank: string; cashback: number } | null>(null);
 
   const stats = useMemo(() => {
     const totalCashback = txns.reduce((s, t) => s + t.cashback, 0);
@@ -19,82 +27,160 @@ export default function Dashboard() {
     return { totalCashback, missedSavings, bestCard, totalTxns: txns.length };
   }, [cards, txns]);
 
-  return (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-display font-bold">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Your credit card rewards at a glance</p>
-      </div>
+  const handleQuickRecommend = () => {
+    if (!qAmount || cards.length === 0) return;
+    const results = recommendCards(cards, qCategory, Number(qAmount));
+    if (results[0]) {
+      setQResult({ name: results[0].name, bank: results[0].bank, cashback: results[0].cashback });
+    }
+  };
 
+  return (
+    <div className="space-y-8">
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Cashback This Month"
           value={`₹${stats.totalCashback.toLocaleString()}`}
+          subtitle="+₹340 vs last month"
           icon={<IndianRupee className="h-4 w-4" />}
-          accent
+          accentColor="emerald"
         />
         <StatCard
-          title="Best Performing Card"
-          value={stats.bestCard?.name || '—'}
-          subtitle={stats.bestCard?.bank}
+          title="Active Cards"
+          value={String(cards.length)}
+          subtitle={`${cards.length} cards linked`}
           icon={<CreditCard className="h-4 w-4" />}
+          accentColor="indigo"
         />
         <StatCard
           title="Missed Savings"
           value={`₹${stats.missedSavings}`}
-          subtitle="Lost by using wrong card"
+          subtitle="Use better cards"
           icon={<TrendingDown className="h-4 w-4" />}
+          accentColor="coral"
         />
         <StatCard
-          title="Total Transactions"
-          value={String(stats.totalTxns)}
-          icon={<Activity className="h-4 w-4" />}
+          title="Best Card"
+          value={stats.bestCard?.name || '—'}
+          subtitle={stats.bestCard?.bank}
+          icon={<Trophy className="h-4 w-4" />}
+          accentColor="amber"
         />
       </div>
 
-      {/* Recent Transactions */}
-      <div className="glass-card overflow-hidden">
-        <div className="p-5 border-b border-border/50 flex items-center justify-between">
-          <h2 className="font-display font-semibold text-lg">Recent Transactions</h2>
-          <Link to="/recommend">
-            <Button variant="outline" size="sm" className="gap-1 text-primary border-primary/30 hover:bg-primary/10">
-              Find Best Card <ArrowRight className="h-3 w-3" />
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
+        {/* Recent Transactions */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="surface-card overflow-hidden"
+        >
+          <div className="p-5 border-b border-border flex items-center justify-between">
+            <h2 className="font-display font-semibold text-lg">Recent Transactions</h2>
+            <Link to="/recommend">
+              <Button variant="outline" size="sm" className="gap-1 text-primary border-primary/30 hover:bg-primary/5">
+                Find Best Card <ArrowRight className="h-3 w-3" />
+              </Button>
+            </Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-muted-foreground">
+                  <th className="px-5 py-3 text-left font-medium">Merchant</th>
+                  <th className="px-5 py-3 text-left font-medium">Category</th>
+                  <th className="px-5 py-3 text-right font-medium">Amount</th>
+                  <th className="px-5 py-3 text-left font-medium">Card</th>
+                  <th className="px-5 py-3 text-right font-medium">Cashback</th>
+                  <th className="px-5 py-3 text-center font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {txns.map((txn, i) => {
+                  const card = cards.find(c => c.id === txn.cardId);
+                  const isOptimal = !txn.missedSavings;
+                  return (
+                    <tr key={txn.id} className={`border-b border-border/60 transition-colors ${i % 2 === 0 ? 'bg-background' : 'bg-card'}`}>
+                      <td className="px-5 py-3 font-medium text-foreground">{txn.merchant}</td>
+                      <td className="px-5 py-3 text-muted-foreground">{txn.category}</td>
+                      <td className="px-5 py-3 text-right text-foreground">₹{txn.amount.toLocaleString()}</td>
+                      <td className="px-5 py-3 text-muted-foreground">{card?.name || txn.cardId}</td>
+                      <td className="px-5 py-3 text-right font-medium text-emerald">₹{txn.cashback}</td>
+                      <td className="px-5 py-3 text-center">
+                        {isOptimal ? (
+                          <span className="inline-flex items-center rounded-full bg-emerald/10 px-2.5 py-0.5 text-xs font-medium text-emerald">
+                            Optimal
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded-full bg-coral/10 px-2.5 py-0.5 text-xs font-medium text-coral">
+                            Missed ₹{txn.missedSavings}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+
+        {/* Quick Recommend Widget */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="surface-card p-5 h-fit"
+        >
+          <h3 className="font-display font-semibold mb-4">Quick Recommend</h3>
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-2">
+              {CATEGORIES.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setQCategory(cat)}
+                  className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${
+                    qCategory === cat
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-secondary text-muted-foreground border-border hover:border-primary/30'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">₹</span>
+              <Input
+                type="number"
+                value={qAmount}
+                onChange={e => setQAmount(e.target.value)}
+                placeholder="Amount"
+                className="pl-7 bg-secondary border-border"
+                onKeyDown={e => e.key === 'Enter' && handleQuickRecommend()}
+              />
+            </div>
+            <Button onClick={handleQuickRecommend} className="w-full gap-1">
+              Find Card <ArrowRight className="h-3 w-3" />
             </Button>
-          </Link>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border/50 text-muted-foreground">
-                <th className="px-5 py-3 text-left font-medium">Merchant</th>
-                <th className="px-5 py-3 text-left font-medium">Category</th>
-                <th className="px-5 py-3 text-left font-medium">Card</th>
-                <th className="px-5 py-3 text-right font-medium">Amount</th>
-                <th className="px-5 py-3 text-right font-medium">Cashback</th>
-              </tr>
-            </thead>
-            <tbody>
-              {txns.map(txn => {
-                const card = cards.find(c => c.id === txn.cardId);
-                return (
-                  <tr key={txn.id} className="border-b border-border/30 hover:bg-secondary/30 transition-colors">
-                    <td className="px-5 py-3 font-medium">{txn.merchant}</td>
-                    <td className="px-5 py-3 text-muted-foreground">{txn.category}</td>
-                    <td className="px-5 py-3 text-muted-foreground">{card?.name || txn.cardId}</td>
-                    <td className="px-5 py-3 text-right">₹{txn.amount.toLocaleString()}</td>
-                    <td className="px-5 py-3 text-right">
-                      <span className="text-success font-medium">₹{txn.cashback}</span>
-                      {txn.missedSavings ? (
-                        <span className="text-destructive text-xs ml-1">(-₹{txn.missedSavings})</span>
-                      ) : null}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+
+            {qResult && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mt-3 p-4 rounded-lg bg-primary/5 border border-primary/20"
+              >
+                <p className="text-xs text-muted-foreground">Best card for {qCategory}</p>
+                <p className="font-display font-bold text-foreground mt-1">{qResult.name}</p>
+                <p className="text-xs text-muted-foreground">{qResult.bank}</p>
+                <p className="text-lg font-bold text-emerald mt-2">₹{qResult.cashback.toFixed(2)}</p>
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
       </div>
     </div>
   );
