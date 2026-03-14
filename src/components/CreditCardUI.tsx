@@ -55,4 +55,7 @@ const CreditCardUI = forwardRef<HTMLDivElement, Props>(({ card, onClick, highlig
       <div className="absolute -right-4 top-8 h-20 w-20 rounded-full bg-white/5" />
     </motion.div>
   );
-}
+});
+
+CreditCardUI.displayName = 'CreditCardUI';
+export default CreditCardUI;
