@@ -1,7 +1,7 @@
+import { forwardRef, useMemo } from 'react';
 import { getBankGradient, CreditCard as CardType } from '@/lib/data';
 import { CreditCard as CardIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
 
 interface Props {
   card: CardType;
@@ -10,7 +10,7 @@ interface Props {
   compact?: boolean;
 }
 
-export default function CreditCardUI({ card, onClick, highlight, compact }: Props) {
+const CreditCardUI = forwardRef<HTMLDivElement, Props>(({ card, onClick, highlight, compact }, ref) => {
   const lastFour = useMemo(() => String(Math.floor(1000 + Math.random() * 9000)), []);
 
   return (
