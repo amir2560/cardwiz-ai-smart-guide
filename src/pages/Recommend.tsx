@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, Copy, Check } from 'lucide-react';
+import { Sparkles, Copy, Check, ArrowRight } from 'lucide-react';
 import { loadCards } from '@/lib/store';
 import { recommendCards, CATEGORIES, Category, RecommendationResult } from '@/lib/data';
 import CreditCardUI from '@/components/CreditCardUI';
@@ -7,6 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { motion } from 'framer-motion';
+
+const EXAMPLE_CHIPS = [
+  { label: '🍕 Swiggy ₹800', value: 'Swiggy ₹800' },
+  { label: '✈️ Flight ₹12,000', value: 'booked flight on MakeMyTrip ₹12000' },
+  { label: '⛽ Fuel ₹2,000', value: 'BPCL fuel ₹2000' },
+  { label: '🛒 Amazon ₹3,500', value: 'bought on Amazon ₹3500' },
+];
 
 export default function Recommend() {
   const [cards] = useState(loadCards);
@@ -16,6 +24,7 @@ export default function Recommend() {
   const [results, setResults] = useState<RecommendationResult[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [searchCategory, setSearchCategory] = useState<Category | null>(null);
   const { toast } = useToast();
 
   const parseNL = (input: string): { category: Category; amount: number } | null => {
@@ -24,10 +33,10 @@ export default function Recommend() {
     if (!amt) return null;
     const lower = input.toLowerCase();
     let cat: Category = 'Other';
-    if (/swiggy|zomato|dine|dinner|lunch|breakfast|restaurant|food/.test(lower)) cat = 'Dining';
-    else if (/flipkart|amazon|shop|myntra|online|buy/.test(lower)) cat = 'Shopping';
+    if (/swiggy|zomato|dine|dinner|lunch|breakfast|restaurant|food|pizza/.test(lower)) cat = 'Dining';
+    else if (/flipkart|amazon|shop|myntra|online|buy|bought|shoes/.test(lower)) cat = 'Shopping';
     else if (/fuel|petrol|diesel|bpcl|hp|ioc/.test(lower)) cat = 'Fuel';
-    else if (/travel|flight|hotel|makemytrip|trip|booking/.test(lower)) cat = 'Travel';
+    else if (/travel|flight|hotel|makemytrip|trip|booking|booked/.test(lower)) cat = 'Travel';
     else if (/movie|netflix|hotstar|entertain|spotify/.test(lower)) cat = 'Entertainment';
     return { category: cat, amount: amt };
   };
@@ -38,11 +47,13 @@ export default function Recommend() {
       toast({ title: 'Could not parse', description: 'Please include an amount and merchant/category.', variant: 'destructive' });
       return;
     }
+    setSearchCategory(parsed.category);
     runRecommend(parsed.category, parsed.amount);
   };
 
   const handleManual = () => {
     if (!amount) return;
+    setSearchCategory(category);
     runRecommend(category, Number(amount));
   };
 
@@ -56,7 +67,7 @@ export default function Recommend() {
     setTimeout(() => {
       setResults(recommendCards(cards, cat, amt));
       setLoading(false);
-    }, 800);
+    }, 600);
   };
 
   const copyName = (name: string, id: string) => {
@@ -70,53 +81,68 @@ export default function Recommend() {
   const winnerCard = winner ? cards.find(c => c.id === winner.cardId) : null;
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-display font-bold">Smart Recommend</h1>
-        <p className="text-muted-foreground mt-1">Find the best card for any purchase</p>
+        <h1 className="text-2xl font-display font-bold text-foreground">Find Your Best Card</h1>
+        <p className="text-muted-foreground text-sm mt-1">Tell us what you're buying — we'll tell you which card to use</p>
       </div>
 
-      {/* NL Input */}
-      <div className="glass-card p-6 gold-glow">
+      {/* AI Input */}
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="surface-card p-6">
         <div className="flex flex-col sm:flex-row gap-3">
           <Input
             value={nlInput}
             onChange={e => setNlInput(e.target.value)}
-            placeholder="e.g. paid ₹1500 on Swiggy for dinner..."
-            className="flex-1 bg-secondary border-border text-base h-12"
+            placeholder="Try: 'ordered pizza on Swiggy for ₹850' or 'bought shoes on Myntra ₹2400'"
+            className="flex-1 bg-secondary border-border text-sm h-11 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             onKeyDown={e => e.key === 'Enter' && handleNL()}
           />
-          <Button onClick={handleNL} className="h-12 px-6 bg-primary text-primary-foreground hover:bg-primary/90 gap-2 font-semibold">
-            <Sparkles className="h-4 w-4" /> Analyze with AI ✦
+          <Button onClick={handleNL} className="h-11 px-5 gap-2 rounded-full bg-primary hover:bg-primary/90">
+            <Sparkles className="h-4 w-4" /> Analyze ✦
           </Button>
         </div>
+        <div className="flex flex-wrap gap-2 mt-3">
+          {EXAMPLE_CHIPS.map(chip => (
+            <button
+              key={chip.label}
+              onClick={() => { setNlInput(chip.value); }}
+              className="text-xs font-medium px-3 py-1.5 rounded-full border border-border bg-secondary text-muted-foreground hover:border-primary/30 hover:text-foreground transition-all"
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Divider */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-border" />
+        <span className="text-xs text-muted-foreground">or select manually</span>
+        <div className="flex-1 h-px bg-border" />
       </div>
 
-      {/* Manual Fallback */}
-      <div className="glass-card p-6">
-        <p className="text-sm text-muted-foreground mb-4">Or enter details manually:</p>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Select value={category} onValueChange={v => setCategory(v as Category)}>
-            <SelectTrigger className="sm:w-48 bg-secondary border-border"><SelectValue /></SelectTrigger>
-            <SelectContent className="bg-card border-border">
-              {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <div className="relative flex-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
-            <Input
-              type="number"
-              value={amount}
-              onChange={e => setAmount(e.target.value)}
-              placeholder="Amount"
-              className="pl-7 bg-secondary border-border"
-              onKeyDown={e => e.key === 'Enter' && handleManual()}
-            />
-          </div>
-          <Button onClick={handleManual} variant="outline" className="border-primary/30 text-primary hover:bg-primary/10">
-            Find Best Card
-          </Button>
+      {/* Manual */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Select value={category} onValueChange={v => setCategory(v as Category)}>
+          <SelectTrigger className="sm:w-48 bg-card border-border"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <div className="relative flex-1">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">₹</span>
+          <Input
+            type="number"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+            placeholder="Amount"
+            className="pl-7 bg-card border-border"
+            onKeyDown={e => e.key === 'Enter' && handleManual()}
+          />
         </div>
+        <Button onClick={handleManual} variant="outline" className="gap-1 border-primary/30 text-primary hover:bg-primary/5">
+          Compare Cards <ArrowRight className="h-3 w-3" />
+        </Button>
       </div>
 
       {/* Loading */}
@@ -129,26 +155,25 @@ export default function Recommend() {
 
       {/* Results */}
       {results && !loading && (
-        <div className="space-y-6 animate-slide-up">
-          {/* Winner */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+          {/* Winner Banner */}
           {winnerCard && winner && (
-            <div className="glass-card p-6 gold-glow border-primary/30">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="gold-gradient text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
-                  🏆 USE THIS CARD
-                </span>
-                <span className="text-sm text-muted-foreground">Best for this purchase</span>
-              </div>
-              <div className="grid md:grid-cols-2 gap-6">
-                <CreditCardUI card={winnerCard} highlight />
-                <div className="flex flex-col justify-center space-y-2">
-                  <p className="text-3xl font-display font-bold text-primary">₹{winner.cashback.toFixed(2)}</p>
-                  <p className="text-muted-foreground">cashback at {winner.rewardPercent}% reward rate</p>
-                  {results.length > 1 && (
-                    <p className="text-sm text-success">
-                      You save ₹{(winner.cashback - results[1].cashback).toFixed(2)} more than {results[1].name}
-                    </p>
-                  )}
+            <div className="surface-card p-6 bg-primary/5 border-primary/20">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                <div className="w-full md:w-56 shrink-0">
+                  <CreditCardUI card={winnerCard} highlight compact />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Best Card for this Purchase</p>
+                  <p className="text-xl font-display font-bold text-foreground">{winner.name}</p>
+                  <p className="text-sm text-muted-foreground">{winner.bank}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-display font-bold text-emerald">₹{winner.cashback.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">{winner.rewardPercent}% reward rate</p>
+                  <span className="inline-flex items-center mt-2 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                    USE THIS CARD
+                  </span>
                 </div>
               </div>
             </div>
@@ -156,19 +181,20 @@ export default function Recommend() {
 
           {/* Comparison Table */}
           {results.length > 1 && (
-            <div className="glass-card overflow-hidden">
-              <div className="p-5 border-b border-border/50">
-                <h2 className="font-display font-semibold">All Cards Ranked</h2>
+            <div className="surface-card overflow-hidden">
+              <div className="p-5 border-b border-border">
+                <h2 className="font-display font-semibold">Full Comparison</h2>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-border/50 text-muted-foreground">
+                    <tr className="border-b border-border text-muted-foreground">
                       <th className="px-5 py-3 text-left font-medium">Rank</th>
                       <th className="px-5 py-3 text-left font-medium">Card</th>
                       <th className="px-5 py-3 text-left font-medium">Bank</th>
-                      <th className="px-5 py-3 text-right font-medium">Reward %</th>
+                      <th className="px-5 py-3 text-right font-medium">Category Rate</th>
                       <th className="px-5 py-3 text-right font-medium">You Earn</th>
+                      <th className="px-5 py-3 text-right font-medium">vs Best</th>
                       <th className="px-5 py-3 text-right font-medium"></th>
                     </tr>
                   </thead>
@@ -176,20 +202,27 @@ export default function Recommend() {
                     {results.map((r, i) => (
                       <tr
                         key={r.cardId}
-                        className={`border-b border-border/30 transition-colors ${
-                          i === 0 ? 'bg-primary/5' : 'hover:bg-secondary/30'
+                        className={`border-b border-border/60 transition-colors ${
+                          i === 0 ? 'bg-amber/5 border-l-4 border-l-amber' : ''
                         }`}
                       >
-                        <td className="px-5 py-3">
-                          {i === 0 ? <span className="text-primary font-bold">🥇</span> : i + 1}
+                        <td className="px-5 py-3 font-medium">
+                          {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
                         </td>
-                        <td className="px-5 py-3 font-medium">{r.name}</td>
+                        <td className="px-5 py-3 font-medium text-foreground">{r.name}</td>
                         <td className="px-5 py-3 text-muted-foreground">{r.bank}</td>
                         <td className="px-5 py-3 text-right">{r.rewardPercent}%</td>
-                        <td className="px-5 py-3 text-right font-medium text-success">₹{r.cashback.toFixed(2)}</td>
+                        <td className="px-5 py-3 text-right font-medium text-emerald">₹{r.cashback.toFixed(2)}</td>
+                        <td className="px-5 py-3 text-right">
+                          {i === 0 ? (
+                            <span className="text-emerald font-medium">Best</span>
+                          ) : (
+                            <span className="text-coral">–₹{(winner!.cashback - r.cashback).toFixed(2)}</span>
+                          )}
+                        </td>
                         <td className="px-5 py-3 text-right">
                           <button onClick={() => copyName(r.name, r.cardId)} className="text-muted-foreground hover:text-primary transition-colors">
-                            {copiedId === r.cardId ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
+                            {copiedId === r.cardId ? <Check className="h-4 w-4 text-emerald" /> : <Copy className="h-4 w-4" />}
                           </button>
                         </td>
                       </tr>
@@ -199,7 +232,14 @@ export default function Recommend() {
               </div>
             </div>
           )}
-        </div>
+
+          {/* Insight line */}
+          {results.length > 1 && winner && searchCategory && (
+            <div className="surface-card p-4 text-sm text-muted-foreground">
+              💡 You save ₹{(winner.cashback - results[1].cashback).toFixed(2)} more by using <span className="font-semibold text-foreground">{winner.name}</span> over <span className="font-semibold text-foreground">{results[1].name}</span> for {searchCategory.toLowerCase()}
+            </div>
+          )}
+        </motion.div>
       )}
     </div>
   );

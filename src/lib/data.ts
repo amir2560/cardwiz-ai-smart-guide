@@ -41,12 +41,22 @@ export const BANK_GRADIENT: Record<string, string> = {
   'Yes Bank': 'card-gradient-yes',
 };
 
+export const BANK_DOT_COLOR: Record<string, string> = {
+  'Axis': 'bg-indigo',
+  'HDFC': 'bg-destructive',
+  'SBI': 'bg-primary',
+  'ICICI': 'bg-amber',
+  'Amex': 'bg-muted-foreground',
+  'Kotak': 'bg-coral',
+  'Yes Bank': 'bg-primary',
+};
+
 export const DEFAULT_CARDS: CreditCard[] = [
   {
     id: 'axis-ace',
     bank: 'Axis',
     name: 'Axis Ace',
-    rewards: { Dining: 5, Shopping: 2, Fuel: 1, Travel: 2, Entertainment: 2, Other: 1 },
+    rewards: { Dining: 5, Shopping: 2, Fuel: 4, Travel: 2, Entertainment: 2, Other: 1 },
   },
   {
     id: 'hdfc-millennia',
@@ -76,12 +86,18 @@ export const QUICK_ADD_CARDS: CreditCard[] = [
     name: 'Amex MRCC',
     rewards: { Dining: 3, Shopping: 3, Fuel: 1, Travel: 5, Entertainment: 3, Other: 1 },
   },
+  {
+    id: 'kotak-811',
+    bank: 'Kotak',
+    name: 'Kotak 811',
+    rewards: { Dining: 2, Shopping: 2, Fuel: 2, Travel: 2, Entertainment: 2, Other: 1 },
+  },
 ];
 
 export const DEFAULT_TRANSACTIONS: Transaction[] = [
   { id: 't1', merchant: 'Swiggy', category: 'Dining', amount: 800, cardId: 'axis-ace', cashback: 40, date: '2026-03-12' },
   { id: 't2', merchant: 'Flipkart', category: 'Shopping', amount: 3200, cardId: 'sbi-simplyclick', cashback: 320, date: '2026-03-11' },
-  { id: 't3', merchant: 'BPCL Fuel', category: 'Fuel', amount: 2000, cardId: 'hdfc-millennia', cashback: 20, date: '2026-03-10' },
+  { id: 't3', merchant: 'BPCL Fuel', category: 'Fuel', amount: 2000, cardId: 'hdfc-millennia', cashback: 20, missedSavings: 60, bestCardId: 'axis-ace', date: '2026-03-10' },
   { id: 't4', merchant: 'Zomato', category: 'Dining', amount: 600, cardId: 'hdfc-millennia', cashback: 12, missedSavings: 18, bestCardId: 'axis-ace', date: '2026-03-09' },
   { id: 't5', merchant: 'MakeMyTrip', category: 'Travel', amount: 8000, cardId: 'axis-ace', cashback: 160, date: '2026-03-08' },
 ];

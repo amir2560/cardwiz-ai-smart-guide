@@ -9,13 +9,13 @@ export default {
       center: true,
       padding: "2rem",
       screens: {
-        "2xl": "1400px",
+        "2xl": "1200px",
       },
     },
     extend: {
       fontFamily: {
-        display: ['"Space Grotesk"', 'sans-serif'],
-        body: ['"Plus Jakarta Sans"', 'sans-serif'],
+        display: ['"DM Sans"', 'sans-serif'],
+        body: ['"Inter"', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -51,13 +51,10 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        gold: "hsl(var(--gold))",
-        "gold-dim": "hsl(var(--gold-dim))",
-        navy: "hsl(var(--navy))",
-        "navy-light": "hsl(var(--navy-light))",
-        "navy-lighter": "hsl(var(--navy-lighter))",
-        success: "hsl(var(--success))",
-        warning: "hsl(var(--warning))",
+        indigo: "hsl(var(--indigo))",
+        emerald: "hsl(var(--emerald))",
+        coral: "hsl(var(--coral))",
+        amber: "hsl(var(--amber))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
